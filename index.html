@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XPEL Tint Selector</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f14;
+      --surface: #161a22;
+      --card: #1e2430;
+      --accent: #e8a020;
+      --accent2: #f0c040;
+      --text: #f0f2f5;
+      --muted: #8a94a6;
+      --border: #2a3040;
+      --cs: #4a90d9;
+      --xr: #7b5ea7;
+      --xrp: #c0392b;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 2px solid var(--accent);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    header .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    header .tagline {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    /* ── Main ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 60px;
+    }
+
+    /* ── Progress bar ── */
+    #progress-wrap {
+      width: 100%;
+      max-width: 660px;
+      margin-bottom: 32px;
+    }
+
+    #progress-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    #progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 4px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 40px;
+      width: 100%;
+      max-width: 660px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    /* ── Intro screen ── */
+    #intro .headline {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+
+    #intro .headline span { color: var(--accent); }
+
+    #intro .sub {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .badge span { color: var(--accent); margin-right: 5px; }
+
+    /* ── Question screen ── */
+    #question .q-num {
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    #question .q-text {
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1.35;
+      margin-bottom: 8px;
+    }
+
+    #question .q-hint {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option-btn {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--text);
+    }
+
+    .option-btn:hover {
+      border-color: var(--accent);
+      background: rgba(232,160,32,0.08);
+      transform: translateX(4px);
+    }
+
+    .option-btn.selected {
+      border-color: var(--accent);
+      background: rgba(232,160,32,0.15);
+    }
+
+    .option-btn .opt-icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      width: 36px;
+      text-align: center;
+    }
+
+    .option-btn .opt-label {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .option-btn .opt-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ── Result screen ── */
+    #result .result-eyebrow {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    #result .result-title {
+      font-size: 2rem;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    #result .result-subtitle {
+      font-size: 1rem;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .heat-bar-wrap {
+      margin-bottom: 28px;
+    }
+
+    .heat-bar-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .heat-bar {
+      height: 10px;
+      background: var(--border);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .heat-bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 0.6s ease 0.2s;
+    }
+
+    .result-features {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .feat {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.92rem;
+    }
+
+    .feat .check { color: var(--accent); font-size: 1rem; flex-shrink: 0; }
+    .feat .feat-text { color: var(--text); line-height: 1.4; }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-bottom: 28px;
+    }
+
+    .compare-table th {
+      color: var(--muted);
+      font-weight: 600;
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.75rem;
+    }
+
+    .compare-table td {
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .compare-table .pkg-col { font-weight: 700; color: var(--text); }
+    .compare-table tr.highlight { background: rgba(232,160,32,0.08); }
+    .compare-table tr.highlight td { color: var(--text); }
+
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #111;
+    }
+
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 28px;
+    }
+
+    /* ── Screens ── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── Responsive ── */
+    @media (max-width: 500px) {
+      .card { padding: 24px 20px; }
+      #intro .headline { font-size: 1.5rem; }
+      #result .result-title { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">XPEL</div>
+  <div style="color:var(--muted);font-size:1.1rem;">|</div>
+  <div style="font-size:0.95rem;font-weight:600;">Tint Package Selector</div>
+  <div class="tagline">Find your perfect film</div>
+</header>
+
+<main>
+  <div id="progress-wrap">
+    <div id="progress-label">Step <span id="step-cur">0</span> of <span id="step-tot">5</span></div>
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+  </div>
+
+  <!-- ── Intro ── -->
+  <div id="intro" class="card screen active">
+    <div class="headline">Find your <span>ideal tint</span><br>in 60 seconds.</div>
+    <p class="sub">Answer 5 quick questions about your needs and we'll recommend the best XPEL Prime film for your vehicle.</p>
+    <div class="badges">
+      <div class="badge"><span>☀</span> UV Protection</div>
+      <div class="badge"><span>🌡</span> Heat Rejection</div>
+      <div class="badge"><span>📶</span> No Signal Interference</div>
+      <div class="badge"><span>🛡</span> Lifetime Warranty</div>
+    </div>
+    <button class="btn btn-primary" onclick="startQuiz()">Get Started →</button>
+  </div>
+
+  <!-- ── Question ── -->
+  <div id="question" class="card screen">
+    <div class="q-num">Question <span id="q-index">1</span> of 5</div>
+    <div class="q-text" id="q-text"></div>
+    <div class="q-hint" id="q-hint"></div>
+    <div class="options" id="options"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="prevQuestion()">← Back</button>
+      <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- ── Result ── -->
+  <div id="result" class="card screen">
+    <div class="result-eyebrow">Your recommendation</div>
+    <div class="result-title" id="r-name"></div>
+    <div class="result-subtitle" id="r-subtitle"></div>
+
+    <div class="heat-bar-wrap">
+      <div class="heat-bar-label">Heat Rejection</div>
+      <div class="heat-bar"><div class="heat-bar-fill" id="r-heat-fill" style="width:0%"></div></div>
+    </div>
+
+    <div class="result-features" id="r-features"></div>
+
+    <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px;">How all packages compare</div>
+    <table class="compare-table" id="r-table"></table>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="restart()">← Start Over</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  const QUESTIONS = [
+    {
+      text: "How important is heat rejection to you?",
+      hint: "Think about how hot your car gets on a sunny day.",
+      options: [
+        { icon: "😊", label: "Nice to have", desc: "I mostly want tint for looks and privacy.", value: 1 },
+        { icon: "🌡️", label: "Important", desc: "I want noticeably cooler cabin temperatures.", value: 2 },
+        { icon: "🔥", label: "Top priority", desc: "Maximum heat blocking — no compromises.", value: 3 },
+      ]
+    },
+    {
+      text: "How much do you care about UV / skin protection?",
+      hint: "All XPEL films block 99% of UV rays (SPF 1,000), but our highest film adds extra infrared protection.",
+      options: [
+        { icon: "🙂", label: "Basic is fine", desc: "Standard UV protection works for me.", value: 1 },
+        { icon: "🧴", label: "Somewhat important", desc: "I'd like solid protection for longer drives.", value: 2 },
+        { icon: "🛡️", label: "Maximum protection", desc: "I want the best possible skin-safe film.", value: 3 },
+      ]
+    },
+    {
+      text: "What look are you going for?",
+      hint: "Different films offer different levels of visible darkness.",
+      options: [
+        { icon: "🪟", label: "Light & subtle", desc: "I prefer a barely-there tint appearance.", value: 1 },
+        { icon: "🕶️", label: "Darker, sleek look", desc: "I want a noticeably darker, premium style.", value: 2 },
+        { icon: "⚫", label: "Maximum privacy", desc: "The darker the better for privacy.", value: 3 },
+      ]
+    },
+    {
+      text: "How often do you use phone, GPS, or radio in your car?",
+      hint: "Some metallic tints can interfere with signals.",
+      options: [
+        { icon: "📵", label: "Rarely", desc: "I don't rely on signals much while driving.", value: 0 },
+        { icon: "📶", label: "Regularly", desc: "I use GPS or Bluetooth most drives.", value: 1 },
+        { icon: "📡", label: "Constantly", desc: "Signal clarity is critical — I can't lose it.", value: 2 },
+      ]
+    },
+    {
+      text: "What's your budget priority?",
+      hint: "All packages come with a Lifetime Warranty.",
+      options: [
+        { icon: "💰", label: "Value-focused", desc: "Best performance for the price.", value: 1 },
+        { icon: "⚖️", label: "Balanced", desc: "I'll pay more for noticeably better results.", value: 2 },
+        { icon: "🏆", label: "Best available", desc: "I want the top-of-the-line — price is secondary.", value: 3 },
+      ]
+    },
+  ];
+
+  const PACKAGES = {
+    CS: {
+      name: "PRIME CS",
+      color: "#4a90d9",
+      subtitle: "Privacy & Essential Protection",
+      heatPct: 45,
+      heatLabel: "Good",
+      features: [
+        "Blocks 99% of UV rays (SPF 1,000)",
+        "Non-metallic — zero signal interference",
+        "Great dark appearance for privacy",
+        "Precision computer-cut for your vehicle",
+        "Lifetime warranty included",
+      ],
+      bestFor: "Style-focused drivers who want reliable UV protection and a great look without the premium price.",
+    },
+    XR: {
+      name: "PRIME XR",
+      color: "#7b5ea7",
+      subtitle: "High Heat Rejection & Style",
+      heatPct: 72,
+      heatLabel: "Great",
+      features: [
+        "High heat rejection — noticeably cooler cabin",
+        "Blocks 99% of UV rays (SPF 1,000)",
+        "Non-metallic — no signal interference",
+        "Sleek, darker premium appearance",
+        "Lifetime warranty included",
+      ],
+      bestFor: "Drivers who want a meaningful upgrade in comfort and heat rejection with a premium dark look.",
+    },
+    XRP: {
+      name: "PRIME XR PLUS",
+      color: "#e8a020",
+      subtitle: "Maximum Heat & UV Defense",
+      heatPct: 97,
+      heatLabel: "Maximum",
+      features: [
+        "Maximum heat rejection — industry-leading",
+        "Blocks 99% of UV rays (SPF 1,000)",
+        "Non-metallic — no signal interference",
+        "Ultimate skin & interior protection",
+        "Precision computer-cut for your vehicle",
+        "Lifetime warranty included",
+      ],
+      bestFor: "Drivers who demand the very best in heat rejection and skin protection — the top-tier choice.",
+    },
+  };
+
+  let currentQ = 0;
+  let answers = [];
+
+  function setScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function updateProgress(cur, total) {
+    document.getElementById('step-cur').textContent = cur;
+    document.getElementById('step-tot').textContent = total;
+    document.getElementById('progress-fill').style.width = (cur / total * 100) + '%';
+  }
+
+  function startQuiz() {
+    currentQ = 0;
+    answers = [];
+    updateProgress(1, QUESTIONS.length);
+    renderQuestion();
+    setScreen('question');
+  }
+
+  function renderQuestion() {
+    const q = QUESTIONS[currentQ];
+    document.getElementById('q-index').textContent = currentQ + 1;
+    document.getElementById('q-text').textContent = q.text;
+    document.getElementById('q-hint').textContent = q.hint;
+    document.getElementById('next-btn').disabled = answers[currentQ] === undefined;
+
+    const opts = document.getElementById('options');
+    opts.innerHTML = '';
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn' + (answers[currentQ] === i ? ' selected' : '');
+      btn.innerHTML = `
+        <span class="opt-icon">${opt.icon}</span>
+        <div>
+          <div class="opt-label">${opt.label}</div>
+          <div class="opt-desc">${opt.desc}</div>
+        </div>`;
+      btn.onclick = () => selectOption(i);
+      opts.appendChild(btn);
+    });
+  }
+
+  function selectOption(i) {
+    answers[currentQ] = i;
+    document.querySelectorAll('.option-btn').forEach((b, idx) => {
+      b.classList.toggle('selected', idx === i);
+    });
+    document.getElementById('next-btn').disabled = false;
+  }
+
+  function nextQuestion() {
+    if (answers[currentQ] === undefined) return;
+    if (currentQ < QUESTIONS.length - 1) {
+      currentQ++;
+      updateProgress(currentQ + 1, QUESTIONS.length);
+      renderQuestion();
+    } else {
+      updateProgress(QUESTIONS.length, QUESTIONS.length);
+      showResult();
+    }
+  }
+
+  function prevQuestion() {
+    if (currentQ === 0) {
+      updateProgress(0, QUESTIONS.length);
+      setScreen('intro');
+    } else {
+      currentQ--;
+      updateProgress(currentQ + 1, QUESTIONS.length);
+      renderQuestion();
+    }
+  }
+
+  function score() {
+    // answers[i] = option index chosen (0, 1, 2)
+    // Q0: heat importance (0=low, 1=mid, 2=high)
+    // Q1: UV/skin priority (0=basic, 1=mid, 2=max)
+    // Q2: look (0=light, 1=dark, 2=darkest/privacy)
+    // Q3: signal reliance (0=rare, 1=regular, 2=critical)
+    // Q4: budget (0=value, 1=balanced, 2=best)
+
+    const heat = QUESTIONS[0].options[answers[0]].value;
+    const uv   = QUESTIONS[1].options[answers[1]].value;
+    const look = QUESTIONS[2].options[answers[2]].value;
+    const sig  = QUESTIONS[3].options[answers[3]].value; // higher = needs no interference
+    const bud  = QUESTIONS[4].options[answers[4]].value;
+
+    // Score each package
+    let cs = 0, xr = 0, xrp = 0;
+
+    // Heat
+    if (heat === 1) { cs += 3; xr += 1; }
+    else if (heat === 2) { xr += 3; xrp += 1; }
+    else if (heat === 3) { xrp += 4; xr += 1; }
+
+    // UV / skin
+    if (uv === 1) { cs += 2; }
+    else if (uv === 2) { xr += 2; }
+    else if (uv === 3) { xrp += 3; }
+
+    // Look / privacy
+    if (look === 1) { cs += 1; }
+    else if (look === 2) { xr += 2; cs += 1; }
+    else if (look === 3) { cs += 3; xr += 1; } // CS is specifically noted for privacy look
+
+    // Signal (all non-metallic, but reinforce value)
+    if (sig >= 1) { cs += 1; xr += 1; xrp += 1; } // all equal
+
+    // Budget
+    if (bud === 1) { cs += 3; }
+    else if (bud === 2) { xr += 3; }
+    else if (bud === 3) { xrp += 3; }
+
+    if (xrp >= xr && xrp >= cs) return 'XRP';
+    if (xr >= cs) return 'XR';
+    return 'CS';
+  }
+
+  function showResult() {
+    const key = score();
+    const pkg = PACKAGES[key];
+
+    document.getElementById('r-name').textContent = pkg.name;
+    document.getElementById('r-name').style.color = pkg.color;
+    document.getElementById('r-subtitle').textContent = pkg.subtitle;
+
+    const fill = document.getElementById('r-heat-fill');
+    fill.style.background = `linear-gradient(90deg, ${pkg.color}, ${pkg.color}aa)`;
+    setTimeout(() => { fill.style.width = pkg.heatPct + '%'; }, 50);
+
+    const feats = document.getElementById('r-features');
+    feats.innerHTML = pkg.features.map(f =>
+      `<div class="feat"><span class="check">✓</span><div class="feat-text">${f}</div></div>`
+    ).join('');
+
+    // Comparison table
+    const rows = [
+      { label: 'Heat Rejection', CS: 'Good', XR: 'Great', XRP: 'Maximum' },
+      { label: 'UV Protection',  CS: 'SPF 1,000', XR: 'SPF 1,000', XRP: 'SPF 1,000' },
+      { label: 'Signal Safe',    CS: '✓', XR: '✓', XRP: '✓' },
+      { label: 'Best For',       CS: 'Privacy & value', XR: 'Heat + style', XRP: 'Ultimate protection' },
+    ];
+    const pkgKeys = ['CS', 'XR', 'XRP'];
+    const pkgColors = { CS: '#4a90d9', XR: '#7b5ea7', XRP: '#e8a020' };
+    const pkgNames = { CS: 'PRIME CS', XR: 'PRIME XR', XRP: 'PRIME XR PLUS' };
+
+    let html = `<thead><tr><th>Feature</th>`;
+    pkgKeys.forEach(k => {
+      html += `<th><span class="dot" style="background:${pkgColors[k]}"></span>${pkgNames[k]}</th>`;
+    });
+    html += `</tr></thead><tbody>`;
+    rows.forEach(row => {
+      html += `<tr>`;
+      html += `<td class="pkg-col">${row.label}</td>`;
+      pkgKeys.forEach(k => {
+        const isSelected = k === key;
+        const cls = isSelected ? ' class="highlight"' : '';
+        html += `<td${isSelected ? ' style="color:' + pkgColors[k] + ';font-weight:700;"' : ''}>${row[k]}</td>`;
+      });
+      html += `</tr>`;
+    });
+    html += `</tbody>`;
+    document.getElementById('r-table').innerHTML = html;
+
+    // Highlight table rows for selected package col
+    // (already done inline above)
+
+    setScreen('result');
+  }
+
+  function restart() {
+    updateProgress(0, QUESTIONS.length);
+    setScreen('intro');
+  }
+
+  // Init
+  updateProgress(0, QUESTIONS.length);
+</script>
+</body>
+</html>
