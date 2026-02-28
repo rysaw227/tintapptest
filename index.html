@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>XPEL Tint Selector</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#e8a020" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Tint Selector" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -695,6 +701,11 @@
 
   // Init
   updateProgress(0, QUESTIONS.length);
+
+  // Register service worker for offline / installable PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
 </script>
 </body>
 </html>
