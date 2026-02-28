@@ -1,4 +1,4 @@
-const CACHE = 'tint-selector-v1';
+const CACHE = 'tint-selector-v2';
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {

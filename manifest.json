@@ -1,7 +1,7 @@
 {
-  "name": "XPEL Tint Selector",
+  "name": "Tint World Cincinnati — XPEL Package Selector",
   "short_name": "Tint Selector",
-  "description": "Find the right XPEL window tint package for your vehicle",
+  "description": "Find the right XPEL Prime nano-ceramic window tint package for your vehicle",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0d0f14",
