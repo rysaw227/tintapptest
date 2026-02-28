@@ -492,6 +492,90 @@
       .packages-grid { grid-template-columns: 1fr 1fr; }
       .pkg-card.recommended { transform: none; order: -1; grid-column: 1 / -1; }
     }
+
+    /* ── Install / Share section ── */
+    .install-section {
+      margin-top: 22px;
+      padding-top: 22px;
+      border-top: 1px solid var(--border);
+    }
+
+    .install-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .install-btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-soft {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      transition: border-color 0.18s, color 0.18s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-soft:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── iOS install modal ── */
+    #ios-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 1000;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+    }
+
+    #ios-modal {
+      background: var(--card);
+      border-radius: 20px 20px 0 0;
+      padding: 28px 24px 44px;
+      width: 100%;
+      max-width: 480px;
+      border-top: 2px solid var(--accent);
+    }
+
+    .ios-step {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .ios-num {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #111;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .ios-step-text { font-size: 0.9rem; color: var(--text); line-height: 1.4; }
+    .ios-step-text strong { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -551,6 +635,18 @@
       </div>
 
       <button class="btn btn-primary" onclick="showPriorities()">Find My Package →</button>
+
+      <div class="install-section" id="install-section">
+        <div class="install-label">Save &amp; share this app</div>
+        <div class="install-btns">
+          <button class="btn-soft" id="install-btn" hidden onclick="triggerInstall()">
+            📲 Add to Home Screen
+          </button>
+          <button class="btn-soft" onclick="shareApp(this)">
+            ↗ Share This App
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -610,6 +706,29 @@
   </div>
 
 </main>
+
+<!-- ══ iOS Install Modal ══ -->
+<div id="ios-overlay" onclick="closeIOSModal()">
+  <div id="ios-modal" onclick="event.stopPropagation()">
+    <div style="font-size:1.05rem;font-weight:800;color:var(--text);margin-bottom:6px;">Install on iPhone / iPad</div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:22px;">This only takes 3 taps in Safari:</p>
+
+    <div class="ios-step">
+      <div class="ios-num">1</div>
+      <div class="ios-step-text">Tap the <strong>Share</strong> button (the box with an arrow ⬆) at the bottom of Safari</div>
+    </div>
+    <div class="ios-step">
+      <div class="ios-num">2</div>
+      <div class="ios-step-text">Scroll down and tap <strong>"Add to Home Screen"</strong></div>
+    </div>
+    <div class="ios-step" style="margin-bottom:22px;">
+      <div class="ios-num">3</div>
+      <div class="ios-step-text">Tap <strong>Add</strong> — the app icon will appear on your home screen!</div>
+    </div>
+
+    <button onclick="closeIOSModal()" style="width:100%;padding:13px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:0.95rem;font-weight:700;cursor:pointer;letter-spacing:0.5px;">Got it!</button>
+  </div>
+</div>
 
 <script>
   const PRIORITIES = [
@@ -815,6 +934,80 @@
   // ── PWA service worker ────────────────────────────────────────
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+
+  // ── Install prompt & share ─────────────────────────────────────
+  let deferredPrompt = null;
+
+  function isIOS() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  }
+
+  function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+  }
+
+  // Chrome/Android: capture the install prompt before it auto-dismisses
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('install-btn').hidden = false;
+  });
+
+  // Hide install button after the user installs
+  window.addEventListener('appinstalled', () => {
+    document.getElementById('install-btn').hidden = true;
+    deferredPrompt = null;
+  });
+
+  async function triggerInstall() {
+    if (deferredPrompt) {
+      // Android / Chrome — trigger the native prompt
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') deferredPrompt = null;
+    } else if (isIOS()) {
+      openIOSModal();
+    }
+  }
+
+  function openIOSModal() {
+    document.getElementById('ios-overlay').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeIOSModal() {
+    document.getElementById('ios-overlay').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  async function shareApp(btn) {
+    const data = {
+      title: 'Tint World Cincinnati — XPEL Package Selector',
+      text: 'Find the perfect XPEL window tint for your car — takes 30 seconds.',
+      url: window.location.href,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(data);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        const orig = btn.textContent;
+        btn.textContent = '✓ Link Copied!';
+        setTimeout(() => { btn.textContent = orig; }, 2200);
+      }
+    } catch (_) { /* user cancelled */ }
+  }
+
+  // iOS Safari: show the install button so users see the instructions
+  if (isIOS() && !isStandalone()) {
+    document.getElementById('install-btn').hidden = false;
+  }
+
+  // If already running as installed app, hide the whole install section
+  if (isStandalone()) {
+    document.getElementById('install-section').style.display = 'none';
   }
 </script>
 </body>
